@@ -1,3 +1,10 @@
+Taken from https://github.com/mxgxw/MFRC522-python, sligthly modified version that dump the content of the card.
+Use it with https://github.com/lthiery/SPI-Py
+
+Run:
+`python Read.py` to read the card
+`python Write.py` to test writing into sector 8
+
 MFRC522-python
 ==============
 A small class to interface with the NFC reader Module MFRC522 on the Raspberry Pi.
