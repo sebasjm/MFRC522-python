@@ -24,6 +24,8 @@
 import RPi.GPIO as GPIO
 import MFRC522
 import signal
+import sys
+import re
 
 continue_reading = True
 
@@ -44,15 +46,16 @@ MIFAREReader = MFRC522.MFRC522()
 print "Welcome to the MFRC522 data read example"
 print "Press Ctrl-C to stop."
 
+sector = 0
 # This loop keeps checking for chips. If one is near it will get the UID and authenticate
-while continue_reading:
+while sector < 64 and continue_reading:
     
     # Scan for cards    
     (status,TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
 
     # If a card is found
-    if status == MIFAREReader.MI_OK:
-        print "Card detected"
+    #if status == MIFAREReader.MI_OK:
+    #    print "Card detected"
     
     # Get the UID of the card
     (status,uid) = MIFAREReader.MFRC522_Anticoll()
@@ -61,21 +64,25 @@ while continue_reading:
     if status == MIFAREReader.MI_OK:
 
         # Print UID
-        print "Card read UID: %s,%s,%s,%s" % (uid[0], uid[1], uid[2], uid[3])
+        #print "Card read UID: %s,%s,%s,%s" % (uid[0], uid[1], uid[2], uid[3])
     
         # This is the default key for authentication
+        #key = [0x00,0x00,0x00,0x00,0x00,0x00]
         key = [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF]
         
         # Select the scanned tag
         MIFAREReader.MFRC522_SelectTag(uid)
 
         # Authenticate
-        status = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1A, 8, key, uid)
+        #status = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1A, sector, key, uid)
+        status = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1B, sector, key, uid)
 
         # Check if authenticated
         if status == MIFAREReader.MI_OK:
-            MIFAREReader.MFRC522_Read(8)
+            line = MIFAREReader.MFRC522_Read(sector)
             MIFAREReader.MFRC522_StopCrypto1()
+            print str(sector) + " " + ''.join(["{:02x}".format(x) for x in line]),' ',re.sub("[\x00-\x1F\x7F]",".",''.join([chr(x) for x in line]))
+            sector = sector + 1
         else:
             print "Authentication error"
-
+            break

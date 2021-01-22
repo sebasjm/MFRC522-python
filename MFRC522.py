@@ -124,11 +124,13 @@ class MFRC522:
   Reserved32      = 0x3D
   Reserved33      = 0x3E
   Reserved34      = 0x3F
-    
+   
+  spidev = 0
   serNum = []
   
   def __init__(self, dev='/dev/spidev0.0', spd=1000000):
-    spi.openSPI(device=dev,speed=spd)
+    global spidev
+    spidev = spi.openSPI(device=dev,speed=spd)
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(self.NRSTPD, GPIO.OUT)
     GPIO.output(self.NRSTPD, 1)
@@ -138,10 +140,10 @@ class MFRC522:
     self.Write_MFRC522(self.CommandReg, self.PCD_RESETPHASE)
   
   def Write_MFRC522(self, addr, val):
-    spi.transfer(((addr<<1)&0x7E,val))
+    spi.transfer(spidev,((addr<<1)&0x7E,val))
   
   def Read_MFRC522(self, addr):
-    val = spi.transfer((((addr<<1)&0x7E) | 0x80,0))
+    val = spi.transfer(spidev,(((addr<<1)&0x7E) | 0x80,0))
     return val[1]
   
   def SetBitMask(self, reg, mask):
@@ -227,7 +229,6 @@ class MFRC522:
             i = i + 1;
       else:
         status = self.MI_ERR
-
     return (status,backData,backLen)
   
   
@@ -307,7 +308,6 @@ class MFRC522:
     (status, backData, backLen) = self.MFRC522_ToCard(self.PCD_TRANSCEIVE, buf)
     
     if (status == self.MI_OK) and (backLen == 0x18):
-      print "Size: " + str(backData[0])
       return    backData[0]
     else:
       return 0
@@ -359,8 +359,7 @@ class MFRC522:
     if not(status == self.MI_OK):
       print "Error while reading!"
     i = 0
-    if len(backData) == 16:
-      print "Sector "+str(blockAddr)+" "+str(backData)
+    return backData
   
   def MFRC522_Write(self, blockAddr, writeData):
     buff = []

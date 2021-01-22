@@ -60,14 +60,15 @@ while continue_reading:
         print "Card read UID: %s,%s,%s,%s" % (uid[0], uid[1], uid[2], uid[3])
     
         # This is the default key for authentication
+        #key = [0x00,0x00,0x00,0x00,0x00,0x00]
         key = [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF]
         
         # Select the scanned tag
         MIFAREReader.MFRC522_SelectTag(uid)
 
         # Authenticate
-        status = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1A, 8, key, uid)
-        print "\n"
+        #status = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1A, 8, key, uid)
+        status = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1B, 8, key, uid)
 
         # Check if authenticated
         if status == MIFAREReader.MI_OK:
@@ -97,7 +98,7 @@ while continue_reading:
             data = []
             # Fill the data with 0x00
             for x in range(0,16):
-                data.append(0x00)
+                data.append(0x30)
 
             print "Now we fill it with 0x00:"
             MIFAREReader.MFRC522_Write(8, data)
